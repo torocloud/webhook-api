@@ -1,0 +1,186 @@
+{
+    "comments": "Used to register an application to the database for tracking and grouping different webhooks.",
+    "input": [
+        {
+            "name": "input",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "appName",
+                    "allowNull": false
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "app",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "appId"
+                },
+                {
+                    "name": "appName"
+                }
+            ]
+        },
+        {
+            "name": "APIException",
+            "type": "model",
+            "reference": "io.toro.martini.api.APIException"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer",
+            "defaultValue": 200
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "lines": [
+                        {
+                            "type": "set",
+                            "expression": "UUID.randomUUID()",
+                            "evaluate": true,
+                            "to": [
+                                "app",
+                                "appId"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeGloop",
+                    "name": "webhook.sql.app.AddApp",
+                    "inputs": [
+                        {
+                            "from": [
+                                "app",
+                                "appId"
+                            ],
+                            "to": [
+                                "addAppInput",
+                                "appId"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "input",
+                                "appName"
+                            ],
+                            "to": [
+                                "addAppInput",
+                                "app"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeGloop",
+                    "name": "webhook.sql.app.GetApp",
+                    "inputs": [
+                        {
+                            "from": [
+                                "app",
+                                "appId"
+                            ],
+                            "to": [
+                                "getAppInput",
+                                "appId"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "getAppOutput",
+                                "APP_ID"
+                            ],
+                            "to": [
+                                "app",
+                                "appId"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "getAppOutput",
+                                "APP_NAME"
+                            ],
+                            "to": [
+                                "app",
+                                "appName"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "lines": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "message"
+                            ],
+                            "to": [
+                                "APIException",
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "APIException",
+                                "payload"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "responseCode"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeCode",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "message"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

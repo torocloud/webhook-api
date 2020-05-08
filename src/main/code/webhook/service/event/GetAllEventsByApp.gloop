@@ -1,0 +1,125 @@
+{
+    "comments": "Retrieves all events by application.",
+    "input": [
+        {
+            "name": "appId"
+        }
+    ],
+    "output": [
+        {
+            "name": "webhookEvent",
+            "type": "model",
+            "array": true,
+            "reference": "model.WebhookEvent"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer",
+            "defaultValue": 200
+        }
+    ],
+    "steps": [
+        {
+            "type": "invokeGloop",
+            "name": "webhook.sql.event.SelectAllEventsByApp",
+            "declare": [
+                {
+                    "variables": [
+                        {
+                            "name": "selectAllEventsByAppInputCursor",
+                            "type": "model",
+                            "array": true,
+                            "gloopProperties": [
+                                {
+                                    "name": "WEBHOOK_EVENT_ID",
+                                    "required": true,
+                                    "allowNull": false
+                                },
+                                {
+                                    "name": "APP_ID",
+                                    "required": true,
+                                    "allowNull": false
+                                },
+                                {
+                                    "name": "EVENT",
+                                    "required": true,
+                                    "allowNull": false
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "inputs": [
+                {
+                    "from": [
+                        "appId"
+                    ],
+                    "to": [
+                        "selectAllEventsByAppInput",
+                        "appId"
+                    ]
+                }
+            ],
+            "outputs": [
+                {
+                    "from": [
+                        "selectAllEventsByAppInputCursor"
+                    ],
+                    "to": [
+                        "selectAllEventsByAppInputCursor"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "iterate",
+            "input": {
+                "path": [
+                    "selectAllEventsByAppInputCursor"
+                ]
+            },
+            "output": {
+                "path": [
+                    "webhookEvent"
+                ]
+            },
+            "children": [
+                {
+                    "lines": [
+                        {
+                            "from": [
+                                "selectAllEventsByAppInputCursor",
+                                "WEBHOOK_EVENT_ID"
+                            ],
+                            "to": [
+                                "webhookEvent",
+                                "webhook_event_id"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectAllEventsByAppInputCursor",
+                                "APP_ID"
+                            ],
+                            "to": [
+                                "webhookEvent",
+                                "app"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectAllEventsByAppInputCursor",
+                                "EVENT"
+                            ],
+                            "to": [
+                                "webhookEvent",
+                                "event"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

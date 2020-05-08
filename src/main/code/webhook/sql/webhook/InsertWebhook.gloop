@@ -1,0 +1,45 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "insertWebhookInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "$getGeneratedKeys",
+                    "type": "boolean",
+                    "defaultValue": false
+                },
+                {
+                    "name": "webhookId"
+                },
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "webhookUrl"
+                },
+                {
+                    "name": "webhookEventId"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "updateCount",
+            "type": "integer"
+        },
+        {
+            "name": "generatedKeys",
+            "type": "model",
+            "allowExtraProperties": true
+        }
+    ],
+    "connectionPoolName": "webhook",
+    "sqlType": "INSERT",
+    "query": "INSERT INTO \"WEBHOOK\" (\n\t\"WEBHOOK_ID\",\n    \"NAME\",\n    \"WEBHOOK_URL\",\n    \"WEBHOOK_EVENT_ID\"\n)\nVALUES (\n\t:webhookId,\n    :name,\n    :webhookUrl,\n    :webhookEventId\n)"
+}

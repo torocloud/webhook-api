@@ -1,0 +1,38 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "getAppInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "appId"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "getAppOutput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "APP_ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "APP_NAME",
+                    "required": true,
+                    "allowNull": false
+                }
+            ]
+        }
+    ],
+    "connectionPoolName": "webhook",
+    "sqlType": "SELECT_SINGLE",
+    "query": "SELECT \n\t\"APP_ID\",\n\t\"APP_NAME\"\t\nFROM\n    \"APP\"\nWHERE\n    \"APP_ID\" = :appId"
+}

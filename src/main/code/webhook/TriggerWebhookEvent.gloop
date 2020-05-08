@@ -1,0 +1,79 @@
+{
+    "comments": "The service that that will be executed to call all webhooks depending on the given event.\n\nThis service should be placed in other applications that wants to have webhook functionality.",
+    "input": [
+        {
+            "name": "data",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "appId",
+                    "allowNull": false
+                },
+                {
+                    "name": "payload",
+                    "type": "model",
+                    "allowNull": false,
+                    "allowExtraProperties": true
+                },
+                {
+                    "name": "event",
+                    "allowNull": false
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "responseCode",
+            "type": "integer",
+            "defaultValue": 200
+        },
+        {
+            "name": "response",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "status",
+                    "defaultValue": "Called webhook"
+                }
+            ]
+        }
+    ],
+    "steps": [
+        {
+            "type": "invokeCode",
+            "className": "io.toro.martini.JmsMethods",
+            "methodName": "publishString",
+            "parameters": [
+                "java.lang.String",
+                "java.lang.String",
+                "java.util.Map"
+            ],
+            "inputs": [
+                {
+                    "type": "set",
+                    "expression": "queue://webhookJms",
+                    "to": [
+                        "destinationName"
+                    ]
+                },
+                {
+                    "type": "set",
+                    "expression": "data.payload.asJson(false,false)",
+                    "evaluate": true,
+                    "to": [
+                        "string"
+                    ]
+                },
+                {
+                    "type": "set",
+                    "expression": "[\n\t'appId': data.appId,\n\t'event': data.event\n]",
+                    "evaluate": true,
+                    "to": [
+                        "properties"
+                    ]
+                }
+            ]
+        }
+    ]
+}

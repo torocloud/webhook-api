@@ -1,0 +1,43 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "selectEventByNameInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "event"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "selectEventByNameOutput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "WEBHOOK_EVENT_ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "APP_ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "EVENT",
+                    "required": true,
+                    "allowNull": false
+                }
+            ]
+        }
+    ],
+    "connectionPoolName": "webhook",
+    "sqlType": "SELECT_SINGLE",
+    "query": "SELECT \n\t\"WEBHOOK_EVENT_ID\",\n\t\"APP_ID\",\n\t\"EVENT\"\nFROM\n    \"WEBHOOK_EVENT\"\nWHERE\n    \"EVENT\" = :event"
+}

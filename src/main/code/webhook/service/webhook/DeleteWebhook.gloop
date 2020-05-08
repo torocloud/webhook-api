@@ -1,0 +1,190 @@
+{
+    "input": [
+        {
+            "name": "webhookId"
+        }
+    ],
+    "output": [
+        {
+            "name": "responseCode",
+            "type": "integer",
+            "defaultValue": 200
+        },
+        {
+            "name": "response",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "status"
+                }
+            ]
+        }
+    ],
+    "steps": [
+        {
+            "type": "invokeGloop",
+            "name": "webhook.sql.webhook.SelectWebhook",
+            "declare": [
+                {
+                    "variables": [
+                        {
+                            "name": "selectWebhookOutput",
+                            "type": "model",
+                            "gloopProperties": [
+                                {
+                                    "name": "WEBHOOK_ID",
+                                    "required": true,
+                                    "allowNull": false
+                                },
+                                {
+                                    "name": "NAME",
+                                    "required": true
+                                },
+                                {
+                                    "name": "WEBHOOK_URL",
+                                    "required": true,
+                                    "allowNull": false
+                                },
+                                {
+                                    "name": "WEBHOOK_EVENT_ID",
+                                    "required": true,
+                                    "allowNull": false
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "inputs": [
+                {
+                    "from": [
+                        "webhookId"
+                    ],
+                    "to": [
+                        "selectWebhookInput",
+                        "webhookId"
+                    ]
+                }
+            ],
+            "outputs": [
+                {
+                    "from": [
+                        "selectWebhookOutput"
+                    ],
+                    "to": [
+                        "selectWebhookOutput"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "fork",
+            "expression": "selectWebhookOutput?.WEBHOOK_ID",
+            "children": [
+                {
+                    "label": "$null",
+                    "lines": [
+                        {
+                            "type": "set",
+                            "expression": "404",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "\"Webhook with id ${webhookId} not found\"",
+                            "evaluate": true,
+                            "to": [
+                                "response",
+                                "status"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "block",
+                    "label": "$else",
+                    "children": [
+                        {
+                            "type": "invokeGloop",
+                            "name": "webhook.sql.webhook.DeleteWebhook",
+                            "declare": [
+                                {
+                                    "variables": [
+                                        {
+                                            "name": "updateCount",
+                                            "type": "integer"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "inputs": [
+                                {
+                                    "from": [
+                                        "webhookId"
+                                    ],
+                                    "to": [
+                                        "deleteWebhookInput",
+                                        "webhookId"
+                                    ]
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "from": [
+                                        "updateCount"
+                                    ],
+                                    "to": [
+                                        "updateCount"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "fork",
+                            "expression": "updateCount > 0",
+                            "children": [
+                                {
+                                    "label": "true",
+                                    "lines": [
+                                        {
+                                            "type": "set",
+                                            "expression": "\"Deleted webhook with id ${webhookId}\"",
+                                            "evaluate": true,
+                                            "to": [
+                                                "response",
+                                                "status"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "label": "false",
+                                    "lines": [
+                                        {
+                                            "type": "set",
+                                            "expression": "500",
+                                            "to": [
+                                                "responseCode"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "\"Failed to delete webhook with id ${webhookId}\"",
+                                            "evaluate": true,
+                                            "to": [
+                                                "response",
+                                                "status"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

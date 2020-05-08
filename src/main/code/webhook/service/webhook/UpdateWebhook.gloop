@@ -1,0 +1,138 @@
+{
+    "input": [
+        {
+            "name": "webhook",
+            "type": "model",
+            "reference": "model.Webhook"
+        }
+    ],
+    "output": [
+        {
+            "name": "responseCode",
+            "type": "integer"
+        },
+        {
+            "name": "response",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "result"
+                }
+            ]
+        }
+    ],
+    "steps": [
+        {
+            "type": "invokeGloop",
+            "name": "webhook.sql.webhook.UpdateWebhook",
+            "declare": [
+                {
+                    "variables": [
+                        {
+                            "name": "updateCount",
+                            "type": "integer"
+                        }
+                    ]
+                }
+            ],
+            "inputs": [
+                {
+                    "from": [
+                        "webhook",
+                        "name"
+                    ],
+                    "to": [
+                        "updateWebhookInput",
+                        "name"
+                    ]
+                },
+                {
+                    "from": [
+                        "webhook",
+                        "webhook_id"
+                    ],
+                    "to": [
+                        "updateWebhookInput",
+                        "webhookId"
+                    ]
+                },
+                {
+                    "from": [
+                        "webhook",
+                        "webhook_url"
+                    ],
+                    "to": [
+                        "updateWebhookInput",
+                        "webhookUrl"
+                    ]
+                },
+                {
+                    "from": [
+                        "webhook",
+                        "webhook_event_id"
+                    ],
+                    "to": [
+                        "updateWebhookInput",
+                        "webhookEventId"
+                    ]
+                }
+            ],
+            "outputs": [
+                {
+                    "from": [
+                        "updateCount"
+                    ],
+                    "to": [
+                        "updateCount"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "fork",
+            "expression": "updateCount > 0",
+            "children": [
+                {
+                    "label": "true",
+                    "lines": [
+                        {
+                            "type": "set",
+                            "expression": "200",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Successfully updated webhook.",
+                            "to": [
+                                "response",
+                                "result"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "label": "false",
+                    "lines": [
+                        {
+                            "type": "set",
+                            "expression": "404",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Failed to update webhook.",
+                            "to": [
+                                "response",
+                                "result"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

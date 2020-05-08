@@ -1,0 +1,39 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "addAppInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "$getGeneratedKeys",
+                    "type": "boolean",
+                    "defaultValue": false
+                },
+                {
+                    "name": "appId"
+                },
+                {
+                    "name": "app"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "updateCount",
+            "type": "integer"
+        },
+        {
+            "name": "generatedKeys",
+            "type": "model",
+            "allowExtraProperties": true
+        }
+    ],
+    "connectionPoolName": "webhook",
+    "sqlType": "INSERT",
+    "query": "INSERT INTO \"APP\" (\n\t\"APP_ID\",\n    \"APP_NAME\"\n)\nVALUES (\n\t:appId,\n    :app\n)"
+}

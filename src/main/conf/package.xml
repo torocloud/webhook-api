@@ -1,0 +1,22 @@
+<package stateOnStartup="started" id="webhook-api" version="1.0.0" context-path="/webhook-api">
+  <package-dependencies/>
+  <startup-services>
+    <startup-service>gloop:conf.Startup/conf.Startup</startup-service>
+  </startup-services>
+  <shutdown-services/>
+  <endpoints>
+    <endpoint type="jms-listener" name="WebhookJmsListener" service="gloop:conf.listener.WebhookJmsListener/conf.listener.WebhookJmsListener" enabled="true" modifiable="true">
+      <properties>
+        <property name="documentType">JMS</property>
+        <property name="track">false</property>
+        <property name="destinationName">webhookJms</property>
+        <property name="destinationType">queue</property>
+        <property name="transacted">false</property>
+        <property name="concurrentConsumers">1</property>
+        <property name="maxConcurrentConsumers">1</property>
+        <property name="durable">false</property>
+        <property name="acknowledgement">1</property>
+      </properties>
+    </endpoint>
+  </endpoints>
+</package>

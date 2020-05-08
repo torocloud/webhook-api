@@ -1,0 +1,48 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "selectAllEventsByAppInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "$limit",
+                    "type": "integer"
+                },
+                {
+                    "name": "appId"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "selectAllEventsByAppInputCursor",
+            "type": "model",
+            "array": true,
+            "gloopProperties": [
+                {
+                    "name": "WEBHOOK_EVENT_ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "APP_ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "EVENT",
+                    "required": true,
+                    "allowNull": false
+                }
+            ]
+        }
+    ],
+    "connectionPoolName": "webhook",
+    "sqlType": "SELECT_MULTI",
+    "query": "SELECT \n\t\"WEBHOOK_EVENT_ID\",\n\t\"APP_ID\",\n\t\"EVENT\"\nFROM\n    \"WEBHOOK_EVENT\"\nWHERE\n    \"APP_ID\" = :appId"
+}

@@ -1,0 +1,138 @@
+{
+    "comments": "Registers a new event for an application, can be done automatically with `webhook.TriggerWebhookEvent`.",
+    "input": [
+        {
+            "name": "webhookEvent",
+            "type": "model",
+            "reference": "model.WebhookEvent"
+        }
+    ],
+    "output": [
+        {
+            "name": "response",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "status"
+                }
+            ]
+        },
+        {
+            "name": "responseCode",
+            "type": "integer",
+            "defaultValue": 200
+        }
+    ],
+    "steps": [
+        {
+            "lines": [
+                {
+                    "type": "set",
+                    "expression": "UUID.randomUUID()",
+                    "evaluate": true,
+                    "to": [
+                        "webhookEvent",
+                        "webhook_event_id"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "invokeGloop",
+            "name": "webhook.sql.event.InsertWebhookEvent",
+            "declare": [
+                {
+                    "variables": [
+                        {
+                            "name": "updateCount",
+                            "type": "integer"
+                        }
+                    ]
+                }
+            ],
+            "inputs": [
+                {
+                    "from": [
+                        "webhookEvent",
+                        "event"
+                    ],
+                    "to": [
+                        "insertWebhookEventInput",
+                        "event"
+                    ]
+                },
+                {
+                    "from": [
+                        "webhookEvent",
+                        "app"
+                    ],
+                    "to": [
+                        "insertWebhookEventInput",
+                        "app"
+                    ]
+                },
+                {
+                    "from": [
+                        "webhookEvent",
+                        "webhook_event_id"
+                    ],
+                    "to": [
+                        "insertWebhookEventInput",
+                        "eventId"
+                    ]
+                }
+            ],
+            "outputs": [
+                {
+                    "from": [
+                        "updateCount"
+                    ],
+                    "to": [
+                        "updateCount"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "fork",
+            "expression": "updateCount > 0",
+            "children": [
+                {
+                    "label": "true",
+                    "lines": [
+                        {
+                            "type": "set",
+                            "expression": "\"Successfully added new event ${webhookEvent.event}\"",
+                            "evaluate": true,
+                            "to": [
+                                "response",
+                                "status"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "label": "false",
+                    "lines": [
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "\"Failed to add new event ${webhookEvent.event}\"",
+                            "evaluate": true,
+                            "to": [
+                                "response",
+                                "status"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

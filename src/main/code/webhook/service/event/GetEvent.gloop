@@ -1,0 +1,168 @@
+{
+    "input": [
+        {
+            "name": "eventId"
+        }
+    ],
+    "output": [
+        {
+            "name": "webhookEvent",
+            "type": "model",
+            "reference": "model.WebhookEvent"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer",
+            "defaultValue": 200
+        },
+        {
+            "name": "APIException",
+            "type": "model",
+            "reference": "io.toro.martini.api.APIException"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeGloop",
+                    "name": "webhook.sql.event.SelectEvent",
+                    "inputs": [
+                        {
+                            "from": [
+                                "eventId"
+                            ],
+                            "to": [
+                                "selectEventInput",
+                                "webhookEventId"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "selectEventOutput",
+                                "WEBHOOK_EVENT_ID"
+                            ],
+                            "to": [
+                                "webhookEvent",
+                                "webhook_event_id"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectEventOutput",
+                                "EVENT"
+                            ],
+                            "to": [
+                                "webhookEvent",
+                                "event"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectEventOutput",
+                                "APP_ID"
+                            ],
+                            "to": [
+                                "webhookEvent",
+                                "app"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "fork",
+                    "expression": "webhookEvent?.webhook_event_id != null",
+                    "children": [
+                        {
+                            "label": "false",
+                            "lines": [
+                                {
+                                    "type": "set",
+                                    "expression": "404",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "\"Event with id ${eventId} not found\"",
+                                    "evaluate": true,
+                                    "to": [
+                                        "APIException",
+                                        "message"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "lines": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "message"
+                            ],
+                            "to": [
+                                "APIException",
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "APIException",
+                                "payload"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "responseCode"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeCode",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "message"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

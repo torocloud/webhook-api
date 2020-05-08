@@ -1,0 +1,26 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "deleteAppInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "appId"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "updateCount",
+            "type": "integer"
+        }
+    ],
+    "connectionPoolName": "webhook",
+    "sqlType": "DELETE",
+    "query": "DELETE FROM \"APP\"\nWHERE (\n    \"APP_ID\" = :appId\n)"
+}

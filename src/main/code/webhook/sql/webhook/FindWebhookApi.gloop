@@ -1,0 +1,55 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "findWebhookApiInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "$limit",
+                    "type": "integer"
+                },
+                {
+                    "name": "appId"
+                },
+                {
+                    "name": "event"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "findWebhookApiInputCursor",
+            "type": "model",
+            "array": true,
+            "gloopProperties": [
+                {
+                    "name": "WEBHOOK_ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "NAME",
+                    "required": true
+                },
+                {
+                    "name": "WEBHOOK_URL",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "WEBHOOK_EVENT_ID",
+                    "required": true,
+                    "allowNull": false
+                }
+            ]
+        }
+    ],
+    "connectionPoolName": "webhook",
+    "sqlType": "SELECT_MULTI",
+    "query": "SELECT \n\t\"WEBHOOK\".\"WEBHOOK_ID\",\n\t\"WEBHOOK\".\"NAME\",\n\t\"WEBHOOK\".\"WEBHOOK_URL\",\n\t\"WEBHOOK\".\"WEBHOOK_EVENT_ID\"\nFROM\n    \"WEBHOOK\"\nINNER JOIN\n\t\"WEBHOOK_EVENT\"\n\t\tON\n\t\t\t\"WEBHOOK_EVENT\".\"WEBHOOK_EVENT_ID\" = \"WEBHOOK\".\"WEBHOOK_EVENT_ID\"\nWHERE (\n    \"WEBHOOK_EVENT\".\"APP_ID\" = :appId\n    AND\n    \"WEBHOOK_EVENT\".\"EVENT\" = :event\n)"
+}

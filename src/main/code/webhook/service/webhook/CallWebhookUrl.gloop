@@ -1,0 +1,624 @@
+{
+    "comments": "Calls the url in the webhook.\n\nThe main service of this package, it will call the webhook and then log it into the tracker with the request sent and the response given by the url, if there is any.",
+    "input": [
+        {
+            "name": "appId"
+        },
+        {
+            "name": "content"
+        },
+        {
+            "name": "event"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeGloop",
+                    "name": "webhook.sql.webhook.FindWebhookApi",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "findWebhookApiInputCursor",
+                                    "type": "model",
+                                    "array": true,
+                                    "gloopProperties": [
+                                        {
+                                            "name": "WEBHOOK_ID",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "NAME",
+                                            "required": true
+                                        },
+                                        {
+                                            "name": "WEBHOOK_URL",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "WEBHOOK_EVENT_ID",
+                                            "required": true,
+                                            "allowNull": false
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "event"
+                            ],
+                            "to": [
+                                "findWebhookApiInput",
+                                "event"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "appId"
+                            ],
+                            "to": [
+                                "findWebhookApiInput",
+                                "appId"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "findWebhookApiInputCursor"
+                            ],
+                            "to": [
+                                "findWebhookApiInputCursor"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeGloop",
+                    "name": "webhook.sql.app.GetApp",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "getAppOutput",
+                                    "type": "model",
+                                    "gloopProperties": [
+                                        {
+                                            "name": "APP_ID",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "APP_NAME",
+                                            "required": true,
+                                            "allowNull": false
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "appId"
+                            ],
+                            "to": [
+                                "getAppInput",
+                                "appId"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "getAppOutput"
+                            ],
+                            "to": [
+                                "getAppOutput"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "iterate",
+                    "input": {
+                        "path": [
+                            "findWebhookApiInputCursor"
+                        ]
+                    },
+                    "children": [
+                        {
+                            "declare": [
+                                {
+                                    "variables": [
+                                        {
+                                            "name": "trackerUUID"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "lines": [
+                                {
+                                    "type": "set",
+                                    "expression": "UUID.randomUUID()",
+                                    "evaluate": true,
+                                    "to": [
+                                        "trackerUUID"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "block",
+                            "blockType": "TRY_CATCH",
+                            "children": [
+                                {
+                                    "type": "fork",
+                                    "expression": "findWebhookApiInputCursor.WEBHOOK_URL != null",
+                                    "children": [
+                                        {
+                                            "type": "block",
+                                            "label": "true",
+                                            "children": [
+                                                {
+                                                    "type": "invokeCode",
+                                                    "className": "io.toro.martini.TrackerMethods",
+                                                    "methodName": "addDocument",
+                                                    "parameters": [
+                                                        "java.lang.String",
+                                                        "java.lang.String",
+                                                        "java.lang.String",
+                                                        "java.lang.String",
+                                                        "java.lang.String",
+                                                        "java.lang.String",
+                                                        "java.lang.String",
+                                                        "java.util.Map"
+                                                    ],
+                                                    "inputs": [
+                                                        {
+                                                            "from": [
+                                                                "event"
+                                                            ],
+                                                            "to": [
+                                                                "documentTypeId"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "from": [
+                                                                "content"
+                                                            ],
+                                                            "to": [
+                                                                "content"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "from": [
+                                                                "trackerUUID"
+                                                            ],
+                                                            "to": [
+                                                                "internalId"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "from": [
+                                                                "getAppOutput",
+                                                                "APP_NAME"
+                                                            ],
+                                                            "to": [
+                                                                "senderId"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "from": [
+                                                                "findWebhookApiInputCursor",
+                                                                "WEBHOOK_URL"
+                                                            ],
+                                                            "to": [
+                                                                "receiverId"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "type": "set",
+                                                            "expression": "Sending webhook data",
+                                                            "to": [
+                                                                "stateName"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "type": "set",
+                                                            "expression": "Webhook",
+                                                            "to": [
+                                                                "externalId"
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "invokeCode",
+                                                    "declare": [
+                                                        {
+                                                            "variables": [
+                                                                {
+                                                                    "name": "responseCode",
+                                                                    "type": "integer",
+                                                                    "comments": "The HTTP status code"
+                                                                },
+                                                                {
+                                                                    "name": "response",
+                                                                    "type": "object",
+                                                                    "comments": "The response body"
+                                                                }
+                                                            ]
+                                                        }
+                                                    ],
+                                                    "className": "io.toro.martini.HttpMethods",
+                                                    "methodName": "http",
+                                                    "parameters": [
+                                                        "io.toro.gloop.object.property.GloopModel",
+                                                        "io.toro.gloop.object.property.GloopModel",
+                                                        "java.lang.String",
+                                                        "java.lang.String",
+                                                        "boolean",
+                                                        "io.toro.gloop.object.property.GloopModel",
+                                                        "io.toro.gloop.engine.GloopExecutionContext"
+                                                    ],
+                                                    "inputs": [
+                                                        {
+                                                            "from": [
+                                                                "content"
+                                                            ],
+                                                            "to": [
+                                                                "request",
+                                                                "body"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "from": [
+                                                                "findWebhookApiInputCursor",
+                                                                "WEBHOOK_URL"
+                                                            ],
+                                                            "to": [
+                                                                "request",
+                                                                "uri"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "type": "set",
+                                                            "expression": "POST",
+                                                            "to": [
+                                                                "request",
+                                                                "method"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "type": "set",
+                                                            "expression": "application/json",
+                                                            "to": [
+                                                                "request",
+                                                                "contentType"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "type": "set",
+                                                            "expression": "headers {\n\tname 'X-Webhook-Event'\n\tvalue event\n}\nheaders {\n\tname 'X-Webhook-UUID'\n\tvalue trackerUUID\n}\n",
+                                                            "evaluate": true,
+                                                            "to": [
+                                                                "request",
+                                                                "headers"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "type": "set",
+                                                            "expression": "String",
+                                                            "to": [
+                                                                "returnAs"
+                                                            ]
+                                                        }
+                                                    ],
+                                                    "outputs": [
+                                                        {
+                                                            "from": [
+                                                                "response",
+                                                                "content"
+                                                            ],
+                                                            "to": [
+                                                                "response"
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "invokeCode",
+                                                    "className": "io.toro.martini.TrackerMethods",
+                                                    "methodName": "addDocument",
+                                                    "parameters": [
+                                                        "java.lang.String",
+                                                        "java.lang.String",
+                                                        "java.lang.String",
+                                                        "java.lang.String",
+                                                        "java.lang.String",
+                                                        "java.lang.String",
+                                                        "java.lang.String",
+                                                        "java.util.Map"
+                                                    ],
+                                                    "inputs": [
+                                                        {
+                                                            "from": [
+                                                                "event"
+                                                            ],
+                                                            "to": [
+                                                                "documentTypeId"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "from": [
+                                                                "trackerUUID"
+                                                            ],
+                                                            "to": [
+                                                                "internalId"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "from": [
+                                                                "getAppOutput",
+                                                                "APP_NAME"
+                                                            ],
+                                                            "to": [
+                                                                "senderId"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "from": [
+                                                                "findWebhookApiInputCursor",
+                                                                "WEBHOOK_URL"
+                                                            ],
+                                                            "to": [
+                                                                "receiverId"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "from": [
+                                                                "response"
+                                                            ],
+                                                            "to": [
+                                                                "content"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "type": "set",
+                                                            "expression": "Webhook called",
+                                                            "to": [
+                                                                "stateName"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "type": "set",
+                                                            "expression": "Webhook",
+                                                            "to": [
+                                                                "externalId"
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ],
+                            "catch": [
+                                {
+                                    "type": "invokeCode",
+                                    "className": "io.toro.martini.LoggerMethods",
+                                    "methodName": "error",
+                                    "parameters": [
+                                        "java.lang.String",
+                                        "java.lang.Throwable"
+                                    ],
+                                    "inputs": [
+                                        {
+                                            "from": [
+                                                "$gloopException",
+                                                "gloopStackTrace"
+                                            ],
+                                            "to": [
+                                                "message"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "$gloopException",
+                                                "realException"
+                                            ],
+                                            "to": [
+                                                "throwable"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "invokeCode",
+                                    "className": "io.toro.martini.TrackerMethods",
+                                    "methodName": "addDocumentState",
+                                    "parameters": [
+                                        "java.lang.String",
+                                        "java.lang.String",
+                                        "java.lang.String"
+                                    ],
+                                    "inputs": [
+                                        {
+                                            "from": [
+                                                "trackerUUID"
+                                            ],
+                                            "to": [
+                                                "internalId"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "$gloopException",
+                                                "realException"
+                                            ],
+                                            "to": [
+                                                "content"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "Webhook Error",
+                                            "to": [
+                                                "stateName"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "message"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeGloop",
+                    "name": "webhook.sql.app.GetApp",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "getAppOutput",
+                                    "type": "model",
+                                    "gloopProperties": [
+                                        {
+                                            "name": "APP_ID",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "APP_NAME",
+                                            "required": true,
+                                            "allowNull": false
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "appId"
+                            ],
+                            "to": [
+                                "getAppInput",
+                                "appId"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "getAppOutput"
+                            ],
+                            "to": [
+                                "getAppOutput"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeCode",
+                    "className": "io.toro.martini.TrackerMethods",
+                    "methodName": "addDocument",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.String",
+                        "java.lang.String",
+                        "java.lang.String",
+                        "java.lang.String",
+                        "java.lang.String",
+                        "java.lang.String",
+                        "java.util.Map"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "event"
+                            ],
+                            "to": [
+                                "documentTypeId"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "content"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "getAppOutput",
+                                "APP_NAME"
+                            ],
+                            "to": [
+                                "senderId"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Webhook Error",
+                            "to": [
+                                "stateName"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Webhook",
+                            "to": [
+                                "externalId"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "UUID.randomUUID()",
+                            "evaluate": true,
+                            "to": [
+                                "internalId"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

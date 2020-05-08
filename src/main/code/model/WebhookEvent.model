@@ -1,0 +1,17 @@
+{
+    "name": "WebhookEvent",
+    "type": "model",
+    "gloopProperties": [
+        {
+            "name": "webhook_event_id"
+        },
+        {
+            "name": "event",
+            "allowNull": false
+        },
+        {
+            "name": "app",
+            "allowNull": false
+        }
+    ]
+}

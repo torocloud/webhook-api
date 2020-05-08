@@ -1,0 +1,270 @@
+{
+    "comments": "The JMS Listener service to call the webhooks associated with the event received.",
+    "input": [
+        {
+            "name": "textMessage",
+            "type": "model",
+            "reference": "io.toro.martini.jms.TextMessage"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeCode",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "properties",
+                                    "type": "model",
+                                    "comments": "new model whose structure is derived from the array of models",
+                                    "allowExtraProperties": true,
+                                    "gloopProperties": [
+                                        {
+                                            "name": "appId"
+                                        },
+                                        {
+                                            "name": "event"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "className": "io.toro.martini.GloopMethods",
+                    "methodName": "mapModelArrayToDynamicModel",
+                    "parameters": [
+                        "io.toro.gloop.object.property.GloopModel"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "textMessage",
+                                "properties"
+                            ],
+                            "to": [
+                                "model"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "output"
+                            ],
+                            "to": [
+                                "properties"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeGloop",
+                    "name": "webhook.sql.event.SelectEventByName",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "selectEventOutput",
+                                    "type": "model",
+                                    "gloopProperties": [
+                                        {
+                                            "name": "WEBHOOK_EVENT_ID",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "APP_ID",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "EVENT",
+                                            "required": true,
+                                            "allowNull": false
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "properties",
+                                "event"
+                            ],
+                            "to": [
+                                "selectEventByNameInput",
+                                "event"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "selectEventByNameOutput"
+                            ],
+                            "to": [
+                                "selectEventOutput"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "fork",
+                    "expression": "selectEventOutput?.WEBHOOK_EVENT_ID",
+                    "children": [
+                        {
+                            "type": "block",
+                            "label": "$null",
+                            "children": [
+                                {
+                                    "declare": [
+                                        {
+                                            "variables": [
+                                                {
+                                                    "name": "eventId"
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "lines": [
+                                        {
+                                            "type": "set",
+                                            "expression": "UUID.randomUUID()",
+                                            "evaluate": true,
+                                            "to": [
+                                                "eventId"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "invokeGloop",
+                                    "name": "webhook.sql.event.InsertWebhookEvent",
+                                    "inputs": [
+                                        {
+                                            "from": [
+                                                "properties",
+                                                "appId"
+                                            ],
+                                            "to": [
+                                                "insertWebhookEventInput",
+                                                "app"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "properties",
+                                                "event"
+                                            ],
+                                            "to": [
+                                                "insertWebhookEventInput",
+                                                "event"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "eventId"
+                                            ],
+                                            "to": [
+                                                "insertWebhookEventInput",
+                                                "eventId"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "true",
+                                            "to": [
+                                                "insertWebhookEventInput",
+                                                "$getGeneratedKeys"
+                                            ]
+                                        }
+                                    ],
+                                    "outputs": [
+                                        {
+                                            "from": [
+                                                "generatedKeys"
+                                            ],
+                                            "to": [
+                                                "selectEventOutput"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeGloop",
+                    "name": "webhook.service.webhook.CallWebhookUrl",
+                    "inputs": [
+                        {
+                            "from": [
+                                "textMessage",
+                                "text"
+                            ],
+                            "to": [
+                                "content"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "properties",
+                                "event"
+                            ],
+                            "to": [
+                                "event"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "properties",
+                                "appId"
+                            ],
+                            "to": [
+                                "appId"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

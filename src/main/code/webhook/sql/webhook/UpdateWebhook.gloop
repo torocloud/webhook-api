@@ -1,0 +1,35 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "updateWebhookInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "webhookUrl"
+                },
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "webhookEventId"
+                },
+                {
+                    "name": "webhookId"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "updateCount",
+            "type": "integer"
+        }
+    ],
+    "connectionPoolName": "webhook",
+    "sqlType": "UPDATE",
+    "query": "UPDATE \"WEBHOOK\"\nSET\n    \"WEBHOOK_URL\" = COALESCE( :webhookUrl, \"WEBHOOK_URL\" ),\n    \"NAME\" = COALESCE( :name, \"NAME\" ),\n    \"WEBHOOK_EVENT_ID\" = COALESCE( :webhookEventId, \"WEBHOOK_EVENT_ID\" )\nWHERE (\n    \"WEBHOOK_ID\" = :webhookId\n)"
+}

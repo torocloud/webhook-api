@@ -1,0 +1,47 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "selectWebhookInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "webhookId"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "selectWebhookOutput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "WEBHOOK_ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "NAME",
+                    "required": true
+                },
+                {
+                    "name": "WEBHOOK_URL",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "WEBHOOK_EVENT_ID",
+                    "required": true,
+                    "allowNull": false
+                }
+            ]
+        }
+    ],
+    "connectionPoolName": "webhook",
+    "sqlType": "SELECT_SINGLE",
+    "query": "SELECT \n\t\"WEBHOOK_ID\",\n\t\"NAME\",\n\t\"WEBHOOK_URL\",\n\t\"WEBHOOK_EVENT_ID\"\nFROM\n    \"WEBHOOK\"\nWHERE (\n    \"WEBHOOK_ID\" = :webhookId\n)"
+}

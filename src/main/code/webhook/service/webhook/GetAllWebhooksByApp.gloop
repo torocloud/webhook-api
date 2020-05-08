@@ -1,0 +1,138 @@
+{
+    "input": [
+        {
+            "name": "appId"
+        }
+    ],
+    "output": [
+        {
+            "name": "webhook",
+            "type": "model",
+            "array": true,
+            "reference": "model.Webhook"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer",
+            "defaultValue": 200
+        }
+    ],
+    "steps": [
+        {
+            "type": "invokeGloop",
+            "name": "webhook.sql.webhook.SelectAllWebhookByApp",
+            "declare": [
+                {
+                    "variables": [
+                        {
+                            "name": "selectAllWebhookByAppInputCursor",
+                            "type": "model",
+                            "array": true,
+                            "gloopProperties": [
+                                {
+                                    "name": "WEBHOOK_ID",
+                                    "required": true,
+                                    "allowNull": false
+                                },
+                                {
+                                    "name": "NAME",
+                                    "required": true
+                                },
+                                {
+                                    "name": "WEBHOOK_URL",
+                                    "required": true,
+                                    "allowNull": false
+                                },
+                                {
+                                    "name": "WEBHOOK_EVENT_ID",
+                                    "required": true,
+                                    "allowNull": false
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "inputs": [
+                {
+                    "from": [
+                        "appId"
+                    ],
+                    "to": [
+                        "selectAllWebhookByAppInput",
+                        "appId"
+                    ]
+                }
+            ],
+            "outputs": [
+                {
+                    "from": [
+                        "selectAllWebhookByAppInputCursor"
+                    ],
+                    "to": [
+                        "selectAllWebhookByAppInputCursor"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "iterate",
+            "input": {
+                "path": [
+                    "selectAllWebhookByAppInputCursor"
+                ]
+            },
+            "output": {
+                "path": [
+                    "webhook"
+                ]
+            },
+            "children": [
+                {
+                    "lines": [
+                        {
+                            "from": [
+                                "selectAllWebhookByAppInputCursor",
+                                "WEBHOOK_ID"
+                            ],
+                            "to": [
+                                "webhook",
+                                "webhook_id"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectAllWebhookByAppInputCursor",
+                                "NAME"
+                            ],
+                            "to": [
+                                "webhook",
+                                "name"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectAllWebhookByAppInputCursor",
+                                "WEBHOOK_URL"
+                            ],
+                            "to": [
+                                "webhook",
+                                "webhook_url"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectAllWebhookByAppInputCursor",
+                                "WEBHOOK_EVENT_ID"
+                            ],
+                            "to": [
+                                "webhook",
+                                "webhook_event_id"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

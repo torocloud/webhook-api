@@ -1,0 +1,133 @@
+{
+    "input": [
+        {
+            "name": "event"
+        }
+    ],
+    "output": [
+        {
+            "name": "webhook",
+            "type": "model",
+            "array": true,
+            "reference": "model.Webhook"
+        }
+    ],
+    "steps": [
+        {
+            "type": "invokeGloop",
+            "name": "webhook.sql.webhook.SelectAllWebhookByEvent",
+            "declare": [
+                {
+                    "variables": [
+                        {
+                            "name": "selectAllWebhookByEventInputCursor",
+                            "type": "model",
+                            "array": true,
+                            "gloopProperties": [
+                                {
+                                    "name": "WEBHOOK_ID",
+                                    "required": true,
+                                    "allowNull": false
+                                },
+                                {
+                                    "name": "NAME",
+                                    "required": true
+                                },
+                                {
+                                    "name": "WEBHOOK_URL",
+                                    "required": true,
+                                    "allowNull": false
+                                },
+                                {
+                                    "name": "WEBHOOK_EVENT_ID",
+                                    "required": true,
+                                    "allowNull": false
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "inputs": [
+                {
+                    "from": [
+                        "event"
+                    ],
+                    "to": [
+                        "selectAllWebhookByEventInput",
+                        "event"
+                    ]
+                }
+            ],
+            "outputs": [
+                {
+                    "from": [
+                        "selectAllWebhookByEventInputCursor"
+                    ],
+                    "to": [
+                        "selectAllWebhookByEventInputCursor"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "iterate",
+            "input": {
+                "path": [
+                    "selectAllWebhookByEventInputCursor"
+                ]
+            },
+            "output": {
+                "path": [
+                    "webhook"
+                ]
+            },
+            "children": [
+                {
+                    "lines": [
+                        {
+                            "from": [
+                                "selectAllWebhookByEventInputCursor",
+                                "WEBHOOK_ID"
+                            ],
+                            "to": [
+                                "webhook",
+                                "webhook_id"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectAllWebhookByEventInputCursor",
+                                "NAME"
+                            ],
+                            "to": [
+                                "webhook",
+                                "name"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectAllWebhookByEventInputCursor",
+                                "WEBHOOK_URL"
+                            ],
+                            "to": [
+                                "webhook",
+                                "webhook_url"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectAllWebhookByEventInputCursor",
+                                "WEBHOOK_EVENT_ID"
+                            ],
+                            "to": [
+                                "webhook",
+                                "webhook_event_id"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

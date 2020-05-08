@@ -1,0 +1,245 @@
+{
+    "info": {
+        "version": "1.0.0-SNAPSHOT"
+    },
+    "basePath": "/webhooks/",
+    "paths": {
+        "/app": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "bodyParameter": {
+                    "name": "input",
+                    "description": "input"
+                },
+                "responses": {
+                    "200": {
+                        "body": "app",
+                        "description": "Successfully registered application"
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "Failed to register application"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "webhook.service.app.RegisterApp",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/event": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "bodyParameter": {
+                    "name": "webhookEvent",
+                    "description": "webhookEvent"
+                },
+                "responses": {
+                    "200": {
+                        "body": "response",
+                        "description": "Successfully created event"
+                    },
+                    "500": {
+                        "body": "response",
+                        "description": "Failed to create event"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "webhook.service.event.RegisterWebhookEvent",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/event/trigger": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "bodyParameter": {
+                    "name": "data",
+                    "description": "data"
+                },
+                "responses": {
+                    "200": {
+                        "body": "response",
+                        "description": "Called webhook"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "webhook.TriggerWebhookEvent",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/event/{eventId}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "type": "PATH"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "body": "webhookEvent",
+                        "description": "Event exists"
+                    },
+                    "404": {
+                        "body": "APIException",
+                        "description": "Event does not exist"
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "Internal server error"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "webhook.service.event.GetEvent",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/events/{appId}": {
+            "description": "For retrieving all existing events for an application",
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "appId",
+                        "type": "PATH"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "body": "webhookEvent",
+                        "description": "Retrieved all webhook events by app"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "webhook.service.event.GetAllEventsByApp",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/webhook": {
+            "description": "For registering a new webhook or updating an existing one",
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "bodyParameter": {
+                    "name": "webhook",
+                    "description": "webhook"
+                },
+                "responses": {
+                    "200": {
+                        "body": "response",
+                        "description": "Successfully registered new webhook"
+                    },
+                    "404": {
+                        "body": "response",
+                        "description": "Failed to register new webhook"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "webhook.service.webhook.UpdateWebhook",
+                "responseCodeField": "responseCode"
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "bodyParameter": {
+                    "name": "webhook",
+                    "description": "webhook"
+                },
+                "responses": {
+                    "200": {
+                        "body": "webhook",
+                        "description": "Successfully registered new webhook"
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "Failed to register new webhook"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "webhook.service.webhook.AddWebhook",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/webhook/{appId}": {
+            "description": "For retrieving all existing webhooks for an application",
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "appId",
+                        "type": "PATH"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "body": "webhook",
+                        "description": "Retrieved all webhooks by app"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "webhook.service.webhook.GetAllWebhooksByApp",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/webhook/{webhookId}": {
+            "description": "For deleting webhooks",
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "webhookId",
+                        "type": "PATH"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "body": "response",
+                        "description": "Deleted webhook"
+                    },
+                    "404": {
+                        "body": "response",
+                        "description": "Webhook not found"
+                    },
+                    "500": {
+                        "body": "response",
+                        "description": "Failed to delete webhook"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "webhook.service.webhook.DeleteWebhook",
+                "responseCodeField": "responseCode"
+            }
+        }
+    }
+}
